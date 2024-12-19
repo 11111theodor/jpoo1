@@ -93,6 +93,7 @@ public class BankTeller {
         return outputBuilder.getOutput();
     }
 
+
     public static double convertCurrency(double amount, String fromCurrency, String toCurrency) {
         if (fromCurrency.equalsIgnoreCase(toCurrency)) {
             return amount;
