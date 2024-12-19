@@ -10,12 +10,14 @@ public class SendMoney implements BankCommand {
     private final List<exchangeRates> exchangeRates;
     private final CommandInput commandInput;
     private final OutputBuilder outputBuilder;
+    private final TransactionMonitor transactionMonitor;
 
-    public SendMoney(List<User> users, List<exchangeRates> exchangeRates, CommandInput commandInput, OutputBuilder outputBuilder) {
+    public SendMoney(List<User> users, List<exchangeRates> exchangeRates, CommandInput commandInput, OutputBuilder outputBuilder, TransactionMonitor transactionMonitor) {
         this.users = users;
         this.exchangeRates = exchangeRates;
         this.commandInput = commandInput;
         this.outputBuilder = outputBuilder;
+        this.transactionMonitor = transactionMonitor;
     }
 
     @Override
@@ -30,23 +32,27 @@ public class SendMoney implements BankCommand {
         Account receiverAccount = findAccountByIban(receiverIban);
 
         if (senderAccount == null) {
-            //transactionMonitor.logTransaction(senderIban, "sendMoney", amount, null,
-            //        description, timestamp, false, "Sender account not found");
+            transactionMonitor.logTransaction(senderIban, "sendMoney", amount, null, description, timestamp, false,
+                    "Sender account not found");
             // outputBuilder.sendMoneyError("Sender account not found", timestamp);
             return;
         }
 
         if (receiverAccount == null) {
-            //transactionMonitor.logTransaction(senderIban, "sendMoney", amount, senderAccount.getCurrency(),
-            //        description, timestamp, false, "Receiver account not found");
+            transactionMonitor.logTransaction(senderIban, "sendMoney", amount, senderAccount.getCurrency(), description,
+                    timestamp, true, null);
+
             return;
         }
 
         if (senderAccount.getBalance() < amount) {
+            transactionMonitor.logTransaction(senderIban, "sendMoney", amount, null, description, timestamp, false,
+                    "Sender account not found");
             return;
         }
 
         double convertedAmount = convertCurrency(amount, senderAccount.getCurrency(), receiverAccount.getCurrency());
+        transactionMonitor.logTransaction(senderIban, "sendMoney", amount, senderAccount.getCurrency(), description, timestamp, true, null);
 
         double senderNewBalance = senderAccount.getBalance() - amount;
         double receiverNewBalance = receiverAccount.getBalance() + convertedAmount;

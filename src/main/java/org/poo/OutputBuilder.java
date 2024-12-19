@@ -3,6 +3,7 @@ package org.poo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.poo.utils.Transaction;
 
 import java.util.List;
 
@@ -107,7 +108,6 @@ public class OutputBuilder {
         return output;
     }
 
-    // Java
     public void sendMoneyError(String description, int timestamp) {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -213,4 +213,31 @@ public class OutputBuilder {
         outputNode.put("timestamp", timestamp);
         output.add(outputNode);
     }
+
+    public void printTransactions(List<Transaction> transactions, String email, int timestamp) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode outputNode = objectMapper.createObjectNode();
+        outputNode.put("command", "printTransactions");
+        ArrayNode transactionsArray = objectMapper.createArrayNode();
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getAccountIban().startsWith(email)) {
+                ObjectNode transactionNode = objectMapper.createObjectNode();
+                transactionNode.put("accountIban", transaction.getAccountIban());
+                transactionNode.put("action", transaction.getAction());
+                transactionNode.put("amount", transaction.getAmount());
+                transactionNode.put("currency", transaction.getCurrency());
+                transactionNode.put("description", transaction.getDescription());
+                transactionNode.put("timestamp", transaction.getTimestamp());
+                transactionNode.put("success", transaction.isSuccess());
+                transactionNode.put("errorMessage", transaction.getErrorMessage());
+                transactionsArray.add(transactionNode);
+            }
+        }
+
+        outputNode.set("output", transactionsArray);
+        outputNode.put("timestamp", timestamp);
+        output.add(outputNode);
+    }
+
 }

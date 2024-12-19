@@ -8,6 +8,8 @@ import org.poo.fileio.UserInput;
 import org.poo.utils.SendMoney;
 import org.poo.utils.SplitPayment;
 import org.poo.utils.Utils;
+import org.poo.utils.TransactionMonitor;
+import org.poo.utils.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +18,14 @@ import java.util.List;
 public class BankTeller {
     private final OutputBuilder outputBuilder;
     private List<User> users;
+    private final TransactionMonitor transactionMonitor;
     private static List<exchangeRates> exchangeRates;
     private int timestamp;
 
     public BankTeller() {
         this.outputBuilder = new OutputBuilder();
         this.users = new ArrayList<>();
+        this.transactionMonitor = new TransactionMonitor();
         this.exchangeRates = new ArrayList<>();
         this.timestamp = 0;
     }
@@ -69,20 +73,22 @@ public class BankTeller {
                 payOnline payOnlineCommand = new payOnline(users, command, outputBuilder);
                 payOnlineCommand.execute();
             } else if (commandName.equals("sendMoney")) {
-                SendMoney sendMoneyCommand = new SendMoney(users, exchangeRates, command, outputBuilder);
+                SendMoney sendMoneyCommand = new SendMoney(users, exchangeRates, command, outputBuilder, transactionMonitor);
                 sendMoneyCommand.execute();
             } else if (commandName.equals("setAlias")) {
                 org.poo.SetAlias setAliasCommand = new org.poo.SetAlias(users, command, outputBuilder);
                 setAliasCommand.execute();
                 //setAlias(command);
             } else if (commandName.equals("getAccountsForSplit")) {
-                SplitPayment splitPaymentCommand = new SplitPayment(users, command, outputBuilder);
-                splitPaymentCommand.execute();
+                // SplitPayment splitPaymentCommand = new SplitPayment(users, command, outputBuilder);
+                // splitPaymentCommand.execute();
                 //printAccountsForSplit(command, outputBuilder);
             } else if (commandName.equals("splitPayment")) {
-                SplitPayment splitPaymentCommand = new SplitPayment(users, command, outputBuilder);
-                splitPaymentCommand.execute();
+                // SplitPayment splitPaymentCommand = new SplitPayment(users, command, outputBuilder);
+                // splitPaymentCommand.execute();
                 //splitPayment(command, outputBuilder);
+            }  else if (commandName.equals("printTransactions")) {
+                outputBuilder.printTransactions(transactionMonitor.getTransactions(), command.getEmail(), timestamp);
             }
 
         }
